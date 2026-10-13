@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zé Mathyas · La Parrilla</title>
+  <meta name="theme-color" content="#0c0b09" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Inter:wght@420;520;640&display=swap" />
+  <style>
+    :root { --bg:#0c0b09; --surface:#161410; --raised:#211e18; --fg:#f4efe6; --muted:#a89b88; --gold:#c9a227; --line:rgba(201,162,39,.22); }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:Inter,system-ui,sans-serif; }
+    button { cursor:pointer; font:inherit; color:inherit; }
+    header { position:sticky; top:0; z-index:5; background:rgba(12,11,9,.92); border-bottom:1px solid var(--line); backdrop-filter:blur(8px); }
+    .wrap { max-width:32rem; margin:0 auto; padding:0 1rem; }
+    .bar { display:flex; align-items:center; justify-content:space-between; padding:.75rem 0; }
+    .brand { display:flex; gap:.75rem; align-items:center; }
+    .mark { width:2.5rem; height:2.5rem; border-radius:999px; background:var(--gold); color:var(--bg); display:grid; place-items:center; font-family:Fraunces,Georgia,serif; font-size:1.15rem; }
+    h1 { margin:0; font-family:Fraunces,Georgia,serif; color:var(--gold); font-size:1.15rem; font-weight:560; }
+    .sub { margin:.2rem 0 0; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); font-size:.68rem; }
+    .mesa { border:1px solid var(--line); background:var(--surface); color:var(--gold); border-radius:999px; padding:.45rem .8rem; font-size:.9rem; }
+    nav { display:flex; gap:.5rem; overflow:auto; padding-bottom:.75rem; }
+    nav button { border:0; border-radius:999px; padding:.5rem 1rem; white-space:nowrap; background:var(--raised); color:var(--muted); }
+    nav button.on { background:var(--gold); color:var(--bg); }
+    main { padding:1rem 0 7rem; display:flex; flex-direction:column; gap:.75rem; }
+    .card { width:100%; display:flex; gap:.75rem; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:1rem; padding:.75rem; }
+    .card h2 { margin:0; font-size:1rem; font-weight:520; }
+    .card p { margin:.35rem 0 0; color:var(--muted); font-size:.85rem; line-height:1.45; }
+    .price { margin:.5rem 0 0; color:var(--gold); font-weight:640; font-size:.9rem; }
+    .card img, .ph { width:6rem; height:6rem; border-radius:.75rem; object-fit:cover; flex:none; background:var(--raised); }
+    .ph { display:grid; place-items:center; color:var(--muted); font-size:.75rem; }
+    .dock { position:fixed; left:0; right:0; bottom:0; }
+    .dock button, .gold { width:100%; border:0; border-radius:1rem; background:var(--gold); color:var(--bg); font-weight:640; padding:1rem 1.1rem; display:flex; justify-content:space-between; }
+    .sheet-bg { position:fixed; inset:0; background:rgba(0,0,0,.7); border:0; }
+    .sheet { position:fixed; left:0; right:0; bottom:0; max-width:32rem; margin:0 auto; max-height:88vh; overflow:auto; background:var(--bg); border-top:1px solid var(--line); border-radius:1.4rem 1.4rem 0 0; padding:1rem 1.2rem 1.5rem; }
+    .sheet h3 { margin:0; font-family:Fraunces,Georgia,serif; color:var(--gold); font-size:1.3rem; }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
+    .opt { width:100%; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:.8rem; padding:.8rem 1rem; margin-top:.4rem; display:flex; justify-content:space-between; }
+    .opt.on { border-color:var(--gold); background:var(--raised); }
+    .step { width:2.6rem; height:2.6rem; border-radius:999px; border:1px solid var(--line); background:var(--raised); color:var(--gold); }
+    textarea { width:100%; margin-top:.4rem; background:var(--surface); color:var(--fg); border:1px solid var(--line); border-radius:.8rem; padding:.7rem; }
+    .muted { color:var(--muted); font-size:.85rem; }
+    .line { border-bottom:1px solid var(--line); padding:.7rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap bar">
+      <div class="brand">
+        <div class="mark">Z</div>
+        <div>
+          <h1>Zé Mathyas</h1>
+          <p class="sub">La Parrilla & Resto</p>
+        </div>
+      </div>
+      <div class="mesa" id="mesa">Mesa 05</div>
+    </div>
+    <div class="wrap"><nav id="tabs"></nav></div>
+  </header>
+  <main class="wrap" id="list"></main>
+  <div class="dock wrap" id="dock" hidden></div>
+  <div id="overlay"></div>
+  <script>
+    const IMG = "https://cdn.jsdelivr.net/gh/nic0lb/zemathyas@main/public/menu/";
+    const MESAS = { "m1-a7k3":1, "m2-b8p1":2, "m5-x9a2":5, "m8-q4r7":8, "m12-z3m9":12 };
+    const ponto = { id:"ponto", name:"Ponto da carne", mode:"single", required:true, max:1, options:[
+      ["mp","Mal passado"],["apm","Ao ponto para mal"],["ap","Ao ponto"],["apb","Ao ponto para bem"],["bp","Bem passado"]
+    ].map(([id,name]) => ({id,name,extra:0})) };
+    const acomp = { id:"acomp", name:"Acompanhamentos", mode:"multi", required:false, max:3, options:[
+      ["arroz","Arroz de alho",0],["baiao","Baião cremoso do Zé",8],["fritas","Batata frita",0],
+      ["macaxeira","Macaxeira frita",0],["farofa","Farofa mediterrânea",0],["legumes","Legumes assados",0]
+    ].map(([id,name,extra]) => ({id,name,extra})) };
+    const CATS = [["entradas","Entradas"],["cortes","Cortes nobres"],["executivos","Executivos"],["drinks","Drinks"],["bebidas","Bebidas"],["doces","Sobremesas"]];
+    const PRODUCTS = [
+      {id:"chorizo",category:"entradas",name:"Chorizo argentino",description:"Linguiça artesanal na parrilla, casca crocante e miolo suculento.",price:42,setor:"Parrilla",image:"chorizo.jpg",groups:[]},
+      {id:"pao",category:"entradas",name:"Pão de alho artesanal",description:"Pão na brasa com manteiga de alho da casa.",price:28,setor:"Cozinha",groups:[]},
+      {id:"coracao",category:"entradas",name:"Coração de frango",description:"Espeto grelhado, tempero leve de limão e sal grosso.",price:36,setor:"Parrilla",groups:[]},
+      {id:"picanha",category:"cortes",name:"Picanha Angus",description:"Capa de gordura selada. Preço por 100 g, mínimo 300 g.",per100g:18.9,minGrams:300,setor:"Parrilla",image:"picanha.jpg",groups:[ponto,acomp]},
+      {id:"ancho",category:"cortes",name:"Beef ancho",description:"Corte premium da costela, marmoreio marcado.",per100g:22.5,minGrams:300,setor:"Parrilla",groups:[ponto,acomp]},
+      {id:"maminha",category:"cortes",name:"Maminha argentina",description:"Fibra curta, suculenta, ponto da casa.",per100g:16.9,minGrams:300,setor:"Parrilla",groups:[ponto,acomp]},
+      {id:"tomahawk",category:"cortes",name:"Tomahawk",description:"Peça de cerca de 1 kg, para dividir à mesa.",price:289,setor:"Parrilla",image:"tomahawk.jpg",groups:[ponto,acomp]},
+      {id:"medalhao",category:"executivos",name:"Medalhão de filé mignon",description:"Com arroz de alho e legumes grelhados.",price:79.9,setor:"Cozinha",groups:[ponto]},
+      {id:"fettuccine",category:"executivos",name:"Fettuccine ao alho e óleo",description:"Massa fresca, azeite, alho laminado e parmesão.",price:48,setor:"Cozinha",groups:[]},
+      {id:"negroni",category:"drinks",name:"Negroni do Zé",description:"Gin, bitter e vermute, casca de laranja.",price:38,setor:"Bar",image:"negroni.jpg",groups:[]},
+      {id:"gin",category:"drinks",name:"Gin tônica",description:"Gin selecionado e tônica gelada.",price:32,setor:"Bar",groups:[]},
+      {id:"agua",category:"bebidas",name:"Água com gás",description:"Garrafa 500 ml.",price:9,setor:"Copa",groups:[]},
+      {id:"refri",category:"bebidas",name:"Refrigerante lata",description:"Cola, guaraná ou cítrico.",price:8,setor:"Copa",groups:[{id:"sabor",name:"Sabor",mode:"single",required:true,max:1,options:[{id:"cola",name:"Cola",extra:0},{id:"guarana",name:"Guaraná",extra:0},{id:"citrico",name:"Cítrico",extra:0}]}]},
+      {id:"pudim",category:"doces",name:"Pudim de leite",description:"Cremoso, calda de caramelo queimado.",price:24,setor:"Copa",image:"pudim.jpg",groups:[]}
+    ];
+    const brl = (n) => n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+    const label = (p) => p.per100g ? brl(p.per100g)+" / 100 g" : brl(p.price);
+    const q = new URLSearchParams(location.search);
+    const hash = (location.hash || "").replace("#","");
+    const key = q.get("mesa") || hash || "m5-x9a2";
+    const mesaN = MESAS[key] || 5;
+    document.getElementById("mesa").textContent = "Mesa " + String(mesaN).padStart(2,"0");
+    let tab = "entradas", cart = [];
+    const tabs = document.getElementById("tabs");
+    const list = document.getElementById("list");
+    const dock = document.getElementById("dock");
+    const overlay = document.getElementById("overlay");
+    function renderTabs() {
+      tabs.innerHTML = CATS.map(([id,name]) => `<button type="button" data-id="${id}" class="${id===tab?"on":""}">${name}</button>`).join("");
+      tabs.querySelectorAll("button").forEach((b) => b.onclick = () => { tab = b.dataset.id; render(); });
+    }
+    function render() {
+      renderTabs();
+      list.innerHTML = PRODUCTS.filter((p) => p.category===tab).map((p) => `
+        <button class="card" type="button" data-id="${p.id}">
+          <div><h2>${p.name}</h2><p>${p.description}</p><p class="price">${label(p)}</p></div>
+          ${p.image ? `<img alt="" src="${IMG}${p.image}" />` : `<div class="ph">${p.setor}</div>`}
+        </button>`).join("");
+      list.querySelectorAll(".card").forEach((b) => b.onclick = () => openProduct(b.dataset.id));
+      const qty = cart.reduce((s,i)=>s+i.qty,0);
+      const total = cart.reduce((s,i)=>s+i.subtotal,0);
+      dock.hidden = qty===0;
+      dock.innerHTML = qty ? `<div style="padding:0 0 1rem"><button type="button" id="open-cart"><span>${qty} · Ver pedido</span><span>${brl(total)}</span></button></div>` : "";
+      const oc = document.getElementById("open-cart");
+      if (oc) oc.onclick = openCart;
+    }
+    function sheet(title, body, onReady) {
+      overlay.innerHTML = `<button class="sheet-bg" id="bg"></button><div class="sheet"><div class="row"><h3>${title}</h3><button type="button" id="x" class="step">×</button></div><div id="body">${body}</div></div>`;
+      const close = () => { overlay.innerHTML = ""; };
+      document.getElementById("bg").onclick = close;
+      document.getElementById("x").onclick = close;
+      onReady(close);
+    }
+    function openProduct(id) {
+      const p = PRODUCTS.find((x) => x.id===id);
+      const sel = {};
+      p.groups.forEach((g) => { sel[g.id] = g.required && g.mode==="single" ? [g.options[0].id] : []; });
+      let qty = 1, grams = p.minGrams || 300, note = "";
+      const draw = () => {
+        const chosen = p.groups.flatMap((g) => g.options.filter((o) => sel[g.id].includes(o.id)));
+        const extra = chosen.reduce((s,o)=>s+o.extra,0);
+        const unit = (p.per100g ? p.per100g*grams/100 : p.price) + extra;
+        sheet(p.name, `
+          <p class="muted">${p.description}</p>
+          <p class="price">${label(p)}</p>
+          ${p.per100g ? `<p>Peso</p><div class="row"><button class="step" id="gm">−</button><strong>${grams} g</strong><button class="step" id="gp">+</button></div>` : ""}
+          ${p.groups.map((g) => `<p>${g.name}${g.required?" *":""}</p>` + g.options.map((o) => `<button type="button" class="opt ${sel[g.id].includes(o.id)?"on":""}" data-g="${g.id}" data-o="${o.id}"><span>${o.name}</span><span class="muted">${o.extra? "+ "+brl(o.extra):"incluso"}</span></button>`).join("")).join("")}
+          <p>Quantidade</p><div class="row"><button class="step" id="qm">−</button><strong>${qty}</strong><button class="step" id="qp">+</button></div>
+          <p>Observação</p><textarea id="note" rows="2" placeholder="Sem cebola, ponto extra...">${note}</textarea>
+          <button class="gold" id="add" style="margin-top:1rem"><span>Adicionar</span><span>${brl(unit*qty)}</span></button>
+        `, (close) => {
+          const noteEl = document.getElementById("note");
+          noteEl.oninput = () => { note = noteEl.value; };
+          const gm = document.getElementById("gm"); if (gm) gm.onclick = () => { grams = Math.max(p.minGrams||100, grams-50); draw(); };
+          const gp = document.getElementById("gp"); if (gp) gp.onclick = () => { grams += 50; draw(); };
+          document.getElementById("qm").onclick = () => { qty = Math.max(1, qty-1); draw(); };
+          document.getElementById("qp").onclick = () => { qty += 1; draw(); };
+          document.querySelectorAll(".opt").forEach((btn) => btn.onclick = () => {
+            const g = p.groups.find((x) => x.id===btn.dataset.g);
+            const cur = sel[g.id];
+            if (g.mode==="single") sel[g.id] = [btn.dataset.o];
+            else if (cur.includes(btn.dataset.o)) sel[g.id] = cur.filter((x) => x!==btn.dataset.o);
+            else if (cur.length < g.max) sel[g.id] = cur.concat(btn.dataset.o);
+            draw();
+          });
+          document.getElementById("add").onclick = () => {
+            if (p.groups.some((g) => g.required && sel[g.id].length===0)) return;
+            const names = chosen.map((o) => o.name);
+            cart.push({ name:p.name, qty, grams:p.per100g?grams:null, names, note, setor:p.setor, subtotal:unit*qty });
+            close(); render();
+          };
+        });
+      };
+      draw();
+    }
+    function openCart() {
+      const total = cart.reduce((s,i)=>s+i.subtotal,0);
+      sheet("Seu pedido", cart.map((item,i) => `<div class="line row"><div><strong>${item.qty}× ${item.name}</strong><div class="muted">${item.grams?item.grams+" g · ":""}${item.names.join(" · ")} ${item.note? " · "+item.note:""}<br>${item.setor}</div></div><div><div class="price">${brl(item.subtotal)}</div><button type="button" data-i="${i}" class="muted">Remover</button></div></div>`).join("") + `<div class="row" style="margin-top:1rem"><span class="muted">Total</span><strong class="price" style="font-size:1.4rem">${brl(total)}</strong></div><button class="gold" id="send" style="margin-top:1rem">Enviar para a cozinha</button>`, (close) => {
+        document.querySelectorAll("[data-i]").forEach((b) => b.onclick = () => { cart.splice(Number(b.dataset.i),1); close(); cart.length? openCart(): render(); });
+        document.getElementById("send").onclick = () => {
+          const by = {};
+          cart.forEach((item) => { (by[item.setor] ||= []).push(`${item.qty}× ${item.name}${item.grams? " ("+item.grams+" g)":""}${item.names.length? " — "+item.names.join(", "):""}`); });
+          const code = "ZM-" + Math.random().toString(36).slice(2,6).toUpperCase();
+          cart = [];
+          close(); render();
+          sheet("Pedido "+code, `<p class="muted">Mesa ${String(mesaN).padStart(2,"0")} · ${brl(total)}</p>` + Object.entries(by).map(([s,lines]) => `<p class="price">${s}</p><div class="muted">${lines.map((l)=>`<div>${l}</div>`).join("")}</div>`).join(""), () => {});
+        };
+      });
+    }
+    render();
+  </script>
+</body>
+</html>
