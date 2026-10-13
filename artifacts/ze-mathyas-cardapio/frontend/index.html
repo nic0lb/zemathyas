@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0D0D0D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Zé Mathyas | La Parrilla & Resto</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            parrilla: {
+              black: '#0D0D0D',
+              dark:  '#1A1A1A',
+              card:  '#242424',
+              gold:  '#C9A227',
+              'gold-light': '#E8D48B',
+              'gold-dark': '#8B7019',
+              cream: '#F5F0E6',
+              muted: '#9CA3AF',
+            }
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'serif'],
+            body: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-parrilla-black text-parrilla-cream font-body antialiased min-h-screen">
+
+  <!-- ===================== HEADER ===================== -->
+  <header id="header" class="fixed top-0 left-0 right-0 z-50 bg-parrilla-black/95 backdrop-blur-md border-b border-parrilla-gold/20">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-parrilla-gold to-parrilla-gold-dark flex items-center justify-center shadow-lg">
+          <span class="text-parrilla-black font-display font-bold text-lg">Z</span>
+        </div>
+        <div>
+          <h1 class="font-display text-parrilla-gold text-base leading-tight">Zé Mathyas</h1>
+          <p class="text-[10px] text-parrilla-muted tracking-wider uppercase">La Parrilla & Resto</p>
+        </div>
+      </div>
+
+      <!-- Badge da Mesa -->
+      <div id="mesa-badge" class="flex items-center gap-2 bg-parrilla-card border border-parrilla-gold/30 rounded-full px-3 py-1.5">
+        <span class="w-2 h-2 rounded-full bg-parrilla-gold animate-pulse"></span>
+        <span class="text-sm font-semibold text-parrilla-gold" id="mesa-numero">Mesa --</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="pt-20 pb-28 max-w-lg mx-auto">
+
+    <!-- Loading state -->
+    <div id="loading" class="flex flex-col items-center justify-center py-32 gap-4">
+      <div class="w-12 h-12 border-2 border-parrilla-gold border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-parrilla-muted text-sm">Carregando cardápio...</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="error-state" class="hidden flex-col items-center justify-center py-32 px-6 gap-4 text-center">
+      <div class="text-4xl">⚠️</div>
+      <p class="text-parrilla-muted" id="error-message">Algo deu errado</p>
+      <button onclick="location.reload()" class="mt-2 px-6 py-2 bg-parrilla-gold text-parrilla-black font-semibold rounded-full text-sm">
+        Tentar novamente
+      </button>
+    </div>
+
+    <!-- Conteúdo do cardápio -->
+    <div id="cardapio-content" class="hidden">
+
+      <!-- Abas de Categorias (carrossel horizontal) -->
+      <nav id="categorias-nav" class="sticky top-[65px] z-40 bg-parrilla-black/95 backdrop-blur-md border-b border-parrilla-gold/10 overflow-x-auto scrollbar-hide">
+        <div class="flex gap-2 px-4 py-3" id="categorias-tabs">
+          <!-- Preenchido via JS -->
+        </div>
+      </nav>
+
+      <!-- Lista de Produtos por Categoria -->
+      <div id="produtos-lista" class="px-4 pt-4 space-y-8">
+        <!-- Preenchido via JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== CARRINHO FLUTUANTE ===================== -->
+  <div id="carrinho-bar" class="fixed bottom-0 left-0 right-0 z-50 hidden">
+    <div class="max-w-lg mx-auto px-4 pb-4">
+      <button
+        id="btn-abrir-carrinho"
+        class="w-full bg-gradient-to-r from-parrilla-gold-dark to-parrilla-gold text-parrilla-black font-semibold rounded-2xl py-4 px-5 flex items-center justify-between shadow-2xl shadow-parrilla-gold/20 active:scale-[0.98] transition-transform"
+      >
+        <div class="flex items-center gap-3">
+          <span class="bg-parrilla-black text-parrilla-gold w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold" id="carrinho-qtd">0</span>
+          <span>Ver pedido</span>
+        </div>
+        <span class="font-bold" id="carrinho-total">R$ 0,00</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================== MODAL DE PERSONALIZAÇÃO ===================== -->
+  <div id="modal-produto" class="fixed inset-0 z-[60] hidden">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" id="modal-overlay"></div>
+
+    <!-- Sheet (bottom sheet mobile) -->
+    <div id="modal-sheet" class="absolute bottom-0 left-0 right-0 max-w-lg mx-auto bg-parrilla-dark rounded-t-3xl max-h-[90vh] overflow-hidden flex flex-col border-t border-parrilla-gold/20 transform translate-y-full transition-transform duration-300">
+      <!-- Handle -->
+      <div class="flex justify-center pt-3 pb-1">
+        <div class="w-10 h-1 rounded-full bg-parrilla-muted/40"></div>
+      </div>
+
+      <!-- Conteúdo scrollável -->
+      <div class="overflow-y-auto flex-1 px-5 pb-4" id="modal-body">
+        <!-- Preenchido via JS -->
+      </div>
+
+      <!-- Footer fixo do modal -->
+      <div class="border-t border-parrilla-gold/10 px-5 py-4 bg-parrilla-dark">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-parrilla-muted text-sm">Subtotal</span>
+          <span class="text-parrilla-gold font-bold text-lg" id="modal-subtotal">R$ 0,00</span>
+        </div>
+        <button
+          id="btn-add-carrinho"
+          class="w-full bg-gradient-to-r from-parrilla-gold-dark to-parrilla-gold text-parrilla-black font-semibold rounded-xl py-3.5 active:scale-[0.98] transition-transform"
+        >
+          Adicionar ao pedido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== DRAWER DO CARRINHO ===================== -->
+  <div id="drawer-carrinho" class="fixed inset-0 z-[70] hidden">
+    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" id="drawer-overlay"></div>
+
+    <div id="drawer-sheet" class="absolute bottom-0 left-0 right-0 max-w-lg mx-auto bg-parrilla-dark rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col border-t border-parrilla-gold/20 transform translate-y-full transition-transform duration-300">
+      <div class="flex justify-center pt-3 pb-1">
+        <div class="w-10 h-1 rounded-full bg-parrilla-muted/40"></div>
+      </div>
+
+      <div class="px-5 pb-2 flex items-center justify-between">
+        <h2 class="font-display text-xl text-parrilla-gold">Seu Pedido</h2>
+        <button id="btn-fechar-carrinho" class="text-parrilla-muted text-sm">Fechar</button>
+      </div>
+
+      <div class="overflow-y-auto flex-1 px-5" id="carrinho-itens">
+        <!-- Preenchido via JS -->
+      </div>
+
+      <div class="border-t border-parrilla-gold/10 px-5 py-4 space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-parrilla-muted">Total</span>
+          <span class="text-2xl font-bold text-parrilla-gold" id="drawer-total">R$ 0,00</span>
+        </div>
+        <textarea
+          id="obs-gerais"
+          placeholder="Observações gerais do pedido (opcional)"
+          class="w-full bg-parrilla-card border border-parrilla-gold/20 rounded-xl px-4 py-3 text-sm text-parrilla-cream placeholder-parrilla-muted/50 focus:outline-none focus:border-parrilla-gold/50 resize-none"
+          rows="2"
+        ></textarea>
+        <button
+          id="btn-enviar-pedido"
+          class="w-full bg-gradient-to-r from-parrilla-gold-dark to-parrilla-gold text-parrilla-black font-bold rounded-xl py-4 active:scale-[0.98] transition-transform disabled:opacity-50"
+        >
+          Enviar Pedido 🔥
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de feedback -->
+  <div id="toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] hidden">
+    <div class="bg-parrilla-card border border-parrilla-gold/40 text-parrilla-cream px-5 py-3 rounded-full shadow-xl text-sm font-medium flex items-center gap-2">
+      <span id="toast-icon">✓</span>
+      <span id="toast-msg">Item adicionado</span>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Zé Mathyas · La Parrilla",
+      "hasCanvas": false,
+      "bodyTextLen": 364,
+      "bodyTextHash": "c1c33a7cb98cf8ff03f287b354f914d45ac01c1a11f08f1f4f170d1484c11383",
+      "bodyTextPrefix": "Z Zé Mathyas LA PARRILLA & RESTO Mesa 05 Entradas Cortes nobres ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Zé Mathyas · La Parrilla",
+      "hasCanvas": false,
+      "bodyTextLen": 364,
+      "bodyTextHash": "c1c33a7cb98cf8ff03f287b354f914d45ac01c1a11f08f1f4f170d1484c11383",
+      "bodyTextPrefix": "Z Zé Mathyas LA PARRILLA & RESTO Mesa 05 Entradas Cortes nobres ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}

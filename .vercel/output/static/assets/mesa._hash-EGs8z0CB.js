@@ -1,0 +1,1 @@
+import{f as e}from"./preload-helper-BRPS22Ze.js";import{t}from"./MenuApp-CJc3yHJd.js";import{t as n}from"./index-ooL3KLGg.js";var r=e();function i(){let{hash:e}=n.useParams();return(0,r.jsx)(t,{hash:e})}export{i as component};
